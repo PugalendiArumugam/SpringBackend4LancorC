@@ -1,4 +1,4 @@
-package com.nexus.lancorC.back.AppartmentEz.auth.model
+package com.nexus.lancorC.back.appartmentez.auth.model
 
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size

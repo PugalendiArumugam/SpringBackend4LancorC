@@ -1,4 +1,4 @@
-package com.nexus.lancorC.back.AppartmentEz.auth.model
+package com.nexus.lancorC.back.appartmentez.auth.model
 
 data class AuthResponse(
     val success: Boolean,

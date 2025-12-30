@@ -1,4 +1,4 @@
-package com.nexus.lancorC.back.AppartmentEz.config
+package com.nexus.lancorC.back.appartmentez.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
