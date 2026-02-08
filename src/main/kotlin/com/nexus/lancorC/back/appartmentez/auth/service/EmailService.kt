@@ -32,7 +32,7 @@ class EmailService { // Removed the constructor parameter to avoid auto-config c
             mailSender.host = "smtp.gmail.com"
             mailSender.port = 465
             mailSender.username = "pugal.a@gmail.com"
-            mailSender.password = "lhbqksvoltkodabi" // Your App Password
+            mailSender.password = "lhbqksvoltkodabi" // Your App Password for google
 
             val props: Properties = mailSender.javaMailProperties
             props["mail.transport.protocol"] = "smtp"
