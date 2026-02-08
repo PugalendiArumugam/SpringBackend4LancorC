@@ -3,6 +3,7 @@ package com.nexus.lancorC.back.appartmentez.auth.service
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
+import javax.crypto.SecretKey
 import io.jsonwebtoken.security.Keys
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -23,8 +24,8 @@ class JwtTokenService {
     private var expirationDays: Long = 10
     
     // Use a secure key for signing
-    private val signingKey: Key by lazy {
-        Keys.hmacShaKeyFor(jwtSecret.toByteArray())
+    private val signingKey: SecretKey by lazy {
+        Keys.hmacShaKeyFor(jwtSecret.toByteArray(Charsets.UTF_8))
     }
     
     fun generateToken(userId: java.util.UUID, email: String): String {
@@ -81,12 +82,12 @@ class JwtTokenService {
             null
         }
     }
-    
+
     private fun extractAllClaims(token: String): Claims {
-        return Jwts.parserBuilder()
-            .setSigningKey(signingKey)
+        return Jwts.parser()
+            .verifyWith(signingKey)
             .build()
-            .parseClaimsJws(token)
-            .body
+            .parseSignedClaims(token)
+            .payload
     }
 }
