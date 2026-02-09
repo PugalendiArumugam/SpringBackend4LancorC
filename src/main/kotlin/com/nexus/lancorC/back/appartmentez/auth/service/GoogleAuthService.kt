@@ -3,6 +3,7 @@ package com.nexus.lancorC.back.appartmentez.auth.service
 import com.nexus.lancorC.back.appartmentez.auth.model.GoogleAuthRequest
 import com.nexus.lancorC.back.appartmentez.entity.AuthProvider
 import com.nexus.lancorC.back.appartmentez.entity.User
+import com.nexus.lancorC.back.appartmentez.entity.UserType
 import com.nexus.lancorC.back.appartmentez.repository.UserRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -56,15 +57,13 @@ class GoogleAuthService(
                     authProvider = AuthProvider.GOOGLE,
                     googleId = tokenInfo.sub,
                     fullName = name, // Update name from Google
-                    lastLogin = LocalDateTime.now(),
-                    updatedAt = LocalDateTime.now()
+                    lastLogin = LocalDateTime.now()
                 )
             } else {
                 // User already has Google auth, just update last login
                 user.copy(
                     fullName = name, // Update name from Google
-                    lastLogin = LocalDateTime.now(),
-                    updatedAt = LocalDateTime.now()
+                    lastLogin = LocalDateTime.now()
                 )
             }.also { updatedUser ->
                 userRepository.save(updatedUser)
@@ -74,11 +73,11 @@ class GoogleAuthService(
             log.info("Creating new Google user: {}", email)
             val newUser = User(
                 userId = UUID.randomUUID(),
-                societyId = UUID.randomUUID(), // You might want to handle this differently
+                societyId = UUID.randomUUID(), // TODO: handle society assignment appropriately
                 email = email,
                 fullName = name,
                 phone = "", // Empty phone for Google users initially
-                userType = "RESIDENT", // Default user type
+                userType = UserType.TENANT, // Default user type constrained by DB enum
                 authProvider = AuthProvider.GOOGLE,
                 googleId = tokenInfo.sub,
                 lastLogin = LocalDateTime.now()

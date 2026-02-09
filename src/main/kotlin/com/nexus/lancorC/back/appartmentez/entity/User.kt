@@ -26,7 +26,8 @@ data class User(
     val phone: String,
 
     @Column(name = "user_type")
-    val userType: String,
+    @Enumerated(EnumType.STRING)
+    val userType: UserType,
 
     @Column(name = "auth_provider")
     @Enumerated(EnumType.STRING)
@@ -51,4 +52,13 @@ data class User(
 enum class AuthProvider {
     EMAIL,
     GOOGLE
+}
+
+enum class UserType {
+    ADMIN,
+    EC,
+    OWNER,
+    TENANT,
+    STAFF,
+    SECURITY
 }

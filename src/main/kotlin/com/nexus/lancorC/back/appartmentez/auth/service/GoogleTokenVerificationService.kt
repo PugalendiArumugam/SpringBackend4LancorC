@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.HttpClientErrorException
+import java.lang.System
 
 data class GoogleTokenInfo(
     @JsonProperty("azp") val azp: String,
@@ -49,7 +50,7 @@ class GoogleTokenVerificationService {
             }
             
             // Check if token is expired
-            val currentTime = System.currentTimeMillis() / 1000
+            val currentTime = java.lang.System.currentTimeMillis() / 1000
             if (tokenInfo.exp < currentTime) {
                 log.error("Token expired. Expiration: ${tokenInfo.exp}, Current: $currentTime")
                 return Result.failure(Exception("Token expired"))

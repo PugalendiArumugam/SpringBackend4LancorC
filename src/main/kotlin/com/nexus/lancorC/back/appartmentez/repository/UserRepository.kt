@@ -13,4 +13,12 @@ interface UserRepository : JpaRepository<User, String> {
 
     // Add this line to fix the "UserAuthService" error
     fun existsByEmailAndIsActiveTrue(email: String): Boolean
+
+    fun findAllBySocietyId(societyId: UUID): List<User>
+
+    fun findByUserId(userId: UUID): Optional<User>
+
+    fun findByUserIdAndSocietyId(userId: UUID, societyId: UUID): Optional<User>
+
+    fun existsBySocietyIdAndEmailIgnoreCase(societyId: UUID, email: String): Boolean
 }
