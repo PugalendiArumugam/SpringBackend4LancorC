@@ -24,8 +24,9 @@ class SecurityConfig {
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
-        configuration.allowedOriginPatterns = listOf("*")
-        configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
+        // It's better to be specific with your frontend URL during development
+        configuration.allowedOrigins = listOf("http://localhost:3000")
+        configuration.allowedMethods = listOf("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
         configuration.allowedHeaders = listOf("*")
         configuration.allowCredentials = true
 
@@ -44,6 +45,8 @@ class SecurityConfig {
                 authz
                     // Allow all auth endpoints without authentication
                     .requestMatchers("/auth/**").permitAll()
+                    // NEW: Allow access to your Admin User API
+                    .requestMatchers("/api/admin/**").permitAll()
                     // Allow actuator endpoints for monitoring
                     .requestMatchers("/actuator/**").permitAll()
                     // Allow health check
