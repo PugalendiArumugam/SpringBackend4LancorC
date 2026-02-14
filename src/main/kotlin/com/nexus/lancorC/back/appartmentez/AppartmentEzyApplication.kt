@@ -10,3 +10,4 @@ fun main(args: Array<String>) {
 	val context = runApplication<AppartmentEzyApplication>(*args)
 	println("DEBUG: Mail Host is -> " + context.environment.getProperty("spring.mail.host"))
 }
+	
