@@ -27,15 +27,16 @@ class JwtTokenService {
     private val signingKey: SecretKey by lazy {
         Keys.hmacShaKeyFor(jwtSecret.toByteArray(Charsets.UTF_8))
     }
-    
-    fun generateToken(userId: java.util.UUID, email: String): String {
+
+    fun generateToken(userId: java.util.UUID, societyId: java.util.UUID, email: String): String {
         log.info("Generating JWT token for user: {}", email)
-        
+
         val expirationTime = Instant.now().plus(expirationDays, ChronoUnit.DAYS)
-        
+
         return Jwts.builder()
             .setSubject(userId.toString())
             .claim("email", email)
+            .claim("societyId", societyId.toString()) // Store as String in claims for easy JS parsing
             .setIssuedAt(Date.from(Instant.now()))
             .setExpiration(Date.from(expirationTime))
             .signWith(signingKey, SignatureAlgorithm.HS256)

@@ -46,15 +46,21 @@ class AuthController(
 
     @PostMapping("/verify-otp")
     fun verifyOtp(@Valid @RequestBody request: OtpVerifyRequest): AuthResponse {
+        log.info("=== VERIFY OTP CALLED ===")
         val isValid = otpService.verify(request.email, request.otp)
         return if (isValid) {
-            // Get user to generate JWT token
             val user = userRepository.findByEmailIgnoreCase(request.email)
                 .orElseThrow { IllegalArgumentException("User not found") }
-            
-            // Generate JWT token for successful OTP verification
-            val token = jwtTokenService.generateToken(user.userId, request.email)
-            AuthResponse.success("Login successful", token, user.userId.toString())
+
+            log.info("=== USER FOUND: userId={}, societyId={}, email={}", user.userId, user.societyId, user.email)
+
+            // Pass both UUIDs directly
+            val token = jwtTokenService.generateToken(user.userId, user.societyId, request.email)
+
+            // Convert to String only for the AuthResponse JSON
+            val response = AuthResponse.success("Login successful", token, user.userId.toString(), user.societyId.toString())
+            log.info("=== AUTH RESPONSE: {}", response)
+            response
         } else {
             AuthResponse.failure("Invalid OTP")
         }
@@ -64,16 +70,14 @@ class AuthController(
     fun authenticateWithGoogle(@Valid @RequestBody request: GoogleAuthRequest): ResponseEntity<AuthResponse> {
         return try {
             log.info("Google authentication request for email: {}", request.email)
-            
-            // Authenticate user with Google
             val user = googleAuthService.authenticateWithGoogle(request)
-            
-            // Generate JWT token for the authenticated user
-            val token = jwtTokenService.generateToken(user.userId, user.email)
-            
+
+            // FIX: Added user.societyId (UUID) to match the new signature
+            val token = jwtTokenService.generateToken(user.userId, user.societyId, user.email)
+
             log.info("Google authentication successful for user: {}", user.email)
-            ResponseEntity.ok(AuthResponse.success("Authentication successful", token, user.userId.toString()))
-            
+            ResponseEntity.ok(AuthResponse.success("Authentication successful", token, user.userId.toString(), user.societyId.toString()))
+
         } catch (e: IllegalArgumentException) {
             log.error("Google authentication failed: {}", e.message)
             ResponseEntity.badRequest().body(AuthResponse.failure(e.message ?: "Google authentication failed"))
