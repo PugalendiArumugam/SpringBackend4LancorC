@@ -55,7 +55,7 @@ class AuthController(
             log.info("=== USER FOUND: userId={}, societyId={}, email={}", user.userId, user.societyId, user.email)
 
             // Pass both UUIDs directly
-            val token = jwtTokenService.generateToken(user.userId, user.societyId, request.email)
+            val token = jwtTokenService.generateToken(user.userId, request.email, user.societyId)
 
             // Convert to String only for the AuthResponse JSON
             val response = AuthResponse.success("Login successful", token, user.userId.toString(), user.societyId.toString())
@@ -73,7 +73,7 @@ class AuthController(
             val user = googleAuthService.authenticateWithGoogle(request)
 
             // FIX: Added user.societyId (UUID) to match the new signature
-            val token = jwtTokenService.generateToken(user.userId, user.societyId, user.email)
+            val token = jwtTokenService.generateToken(user.userId, user.email, user.societyId)
 
             log.info("Google authentication successful for user: {}", user.email)
             ResponseEntity.ok(AuthResponse.success("Authentication successful", token, user.userId.toString(), user.societyId.toString()))

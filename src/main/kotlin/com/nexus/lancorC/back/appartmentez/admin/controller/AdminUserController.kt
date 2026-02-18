@@ -8,6 +8,7 @@ import com.nexus.lancorC.back.appartmentez.entity.User
 import com.nexus.lancorC.back.appartmentez.entity.UserType
 import com.nexus.lancorC.back.appartmentez.repository.UserRepository
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.transaction.Transactional
 import jakarta.validation.Valid
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
@@ -34,39 +35,37 @@ class AdminUserController(
     }
 
     @PostMapping
+    @Transactional
     fun createUserForAdmin(
         request: HttpServletRequest,
         @Valid @RequestBody body: CreateAdminUserRequest
     ): ResponseEntity<AdminUserResponse> {
         val admin = resolveAdminFromRequest(request)
 
+        // Log the attempt for better traceability
+        log.info("Admin ${admin.email} is creating user ${body.email} for society ${admin.societyId}")
+
         if (userRepository.existsBySocietyIdAndEmailIgnoreCase(admin.societyId, body.email)) {
-            throw ResponseStatusException(
-                HttpStatus.CONFLICT,
-                "User with email '${body.email}' already exists in this society"
-            )
+            throw ResponseStatusException(HttpStatus.CONFLICT, "Email already registered in this society")
         }
 
         val user = User(
             societyId = admin.societyId,
-            email = body.email,
-            fullName = body.fullName,
+            email = body.email.lowercase().trim(), // Senior dev tip: Normalize emails
+            fullName = body.fullName.trim(),
             phone = body.phone,
             userType = body.userType,
             authProvider = AuthProvider.EMAIL,
-            googleId = null,
             isActive = body.isActive
         )
 
         return try {
             val saved = userRepository.save(user)
+            log.info("Successfully saved user with ID: ${saved.userId}")
             ResponseEntity.status(HttpStatus.CREATED).body(saved.toAdminResponse())
-        } catch (ex: DataIntegrityViolationException) {
-            log.error("Failed to create user for society={} email={}", admin.societyId, body.email, ex)
-            throw ResponseStatusException(
-                HttpStatus.CONFLICT,
-                "User violates unique or check constraints"
-            )
+        } catch (ex: Exception) {
+            log.error("Database error during user creation: ${ex.message}", ex)
+            throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database persistence failed")
         }
     }
 
@@ -89,25 +88,38 @@ class AdminUserController(
         val saved = userRepository.save(updated)
         return saved.toAdminResponse()
     }
-
     /**
      * Extracts the authenticated user from the Bearer token and ensures they are an ADMIN.
      * Also provides the `societyId` for data isolation.
      */
     private fun resolveAdminFromRequest(request: HttpServletRequest): User {
-//
+        // Look for header (handles case-sensitivity)
+        val authHeader = request.getHeader("Authorization")
+            ?: request.getHeader("authorization")
+            ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "No Authorization header found")
+
+        if (!authHeader.startsWith("Bearer ", ignoreCase = true)) {
+            throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid Authorization format")
+        }
+
+        val token = authHeader.substring(7).trim()
+
+        val email = jwtTokenService.extractEmail(token)
+            ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED, "Token invalid: email missing")
+
+        val societyIdStr = jwtTokenService.extractSocietyId(token)
+            ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Token invalid: society context missing")
 
         return User(
             userId = UUID.randomUUID(),
-            email = "admin@test.com",
-            fullName = "Mock Admin",
+            email = email,
+            fullName = "Admin",
             phone = "0000000000",
             userType = UserType.ADMIN,
-            societyId = UUID.fromString("11111111-1111-1111-1111-111111111111"),
+            societyId = UUID.fromString(societyIdStr),
             isActive = true,
             authProvider = AuthProvider.EMAIL
         )
-
     }
 
     private fun User.toAdminResponse(): AdminUserResponse =

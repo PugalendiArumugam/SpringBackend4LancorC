@@ -46,7 +46,7 @@ data class CreateAdminUserRequest(
     val email: String,
 
     @field:NotBlank
-    val fullName: String,
+    val fullName: String, // 'full_name' from JSON will now map here automatically
 
     @field:NotBlank
     val phone: String,
@@ -56,4 +56,3 @@ data class CreateAdminUserRequest(
 
     val isActive: Boolean = true
 )
-

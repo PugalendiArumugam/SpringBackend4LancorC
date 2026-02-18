@@ -28,21 +28,36 @@ class JwtTokenService {
         Keys.hmacShaKeyFor(jwtSecret.toByteArray(Charsets.UTF_8))
     }
 
-    fun generateToken(userId: java.util.UUID, societyId: java.util.UUID, email: String): String {
+//    fun generateToken(userId: java.util.UUID, societyId: java.util.UUID, email: String): String {
+//        log.info("Generating JWT token for user: {}", email)
+//
+//        val expirationTime = Instant.now().plus(expirationDays, ChronoUnit.DAYS)
+//
+//        return Jwts.builder()
+//            .setSubject(userId.toString())
+//            .claim("email", email)
+//            .claim("societyId", societyId.toString()) // Store as String in claims for easy JS parsing
+//            .setIssuedAt(Date.from(Instant.now()))
+//            .setExpiration(Date.from(expirationTime))
+//            .signWith(signingKey, SignatureAlgorithm.HS256)
+//            .compact()
+//    }
+
+
+    fun generateToken(userId: UUID, email: String, societyId: UUID): String {
+
         log.info("Generating JWT token for user: {}", email)
 
-        val expirationTime = Instant.now().plus(expirationDays, ChronoUnit.DAYS)
-
         return Jwts.builder()
-            .setSubject(userId.toString())
+            .subject(userId.toString())
             .claim("email", email)
-            .claim("societyId", societyId.toString()) // Store as String in claims for easy JS parsing
-            .setIssuedAt(Date.from(Instant.now()))
-            .setExpiration(Date.from(expirationTime))
-            .signWith(signingKey, SignatureAlgorithm.HS256)
+            .claim("societyId", societyId.toString()) // This MUST be here
+            .issuedAt(Date())
+            .signWith(signingKey)
             .compact()
     }
-    
+
+
     fun extractUserId(token: String): String? {
         return try {
             val claims = extractAllClaims(token)
@@ -84,11 +99,25 @@ class JwtTokenService {
         }
     }
 
-    private fun extractAllClaims(token: String): Claims {
+    public fun extractAllClaims(token: String): Claims {
         return Jwts.parser()
             .verifyWith(signingKey)
             .build()
             .parseSignedClaims(token)
             .payload
     }
+
+    fun extractSocietyId(token: String): String? {
+        return try {
+            val claims = extractAllClaims(token)
+            claims["societyId"] as String?
+        } catch (e: Exception) {
+            log.error("Error extracting societyId from token", e)
+            null
+        }
+    }
+
+
+
+
 }

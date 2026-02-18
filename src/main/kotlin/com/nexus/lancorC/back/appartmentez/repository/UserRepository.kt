@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-interface UserRepository : JpaRepository<User, String> {
+interface UserRepository : JpaRepository<User, UUID> {
 
     // Existing method
     fun findByEmailIgnoreCase(email: String): Optional<User>
