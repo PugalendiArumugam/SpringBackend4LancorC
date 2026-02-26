@@ -51,7 +51,7 @@ data class CreateUnitRequest(
     @JsonProperty("built_up_area")
     val builtUpArea: Double? = null,
 
-    val status: String = "VACANT"
+    val status: String = "vacant"
 )
 
 data class UpdateUnitRequest(

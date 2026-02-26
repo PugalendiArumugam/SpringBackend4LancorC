@@ -25,9 +25,9 @@ data class Unit(
     @Column(name = "floor_number")
     val floorNumber: Int,
 
-    @Column(name = "built_up_area", columnDefinition = "DOUBLE PRECISION")
+    @Column(name = "built_up_area", columnDefinition = "numeric(8,2)")
     val builtUpArea: Double? = null,
 
     @Column(name = "status")
-    val status: String = "VACANT"
+    val status: String = "vacant"
 )
